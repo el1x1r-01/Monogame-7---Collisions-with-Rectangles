@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Collections.Generic;
 
 namespace Monogame_7___Collisions_with_Rectangles
 {
@@ -24,10 +25,10 @@ namespace Monogame_7___Collisions_with_Rectangles
         Rectangle exitRect;
 
         Texture2D barrierTexture;
-        Rectangle barrierRect1, barrierRect2;
+        List<Rectangle> barriers;
 
         Texture2D coinTexture;
-        Rectangle coinRect;
+        List<Rectangle> coins;
 
         Rectangle window;
 
@@ -46,9 +47,17 @@ namespace Monogame_7___Collisions_with_Rectangles
 
             pacSpeed = Vector2.Zero;
             pacRect = new Rectangle(10, 10, 60, 60);
-            barrierRect1 = new Rectangle(0, 250, 350, 75);
-            barrierRect2 = new Rectangle(450, 250, 350, 75);
-            coinRect = new Rectangle(400, 50, coinTexture.Width, coinTexture.Height);
+
+            barriers = new List<Rectangle>();
+            barriers.Add(new Rectangle(0, 250, 350, 75));
+            barriers.Add(new Rectangle(450, 250, 350, 75));
+
+            coins = new List<Rectangle>();
+            coins.Add(new Rectangle(400, 50, coinTexture.Width, coinTexture.Height));
+            coins.Add(new Rectangle(475, 50, coinTexture.Width, coinTexture.Height));
+            coins.Add(new Rectangle(200, 300, coinTexture.Width, coinTexture.Height));
+            coins.Add(new Rectangle(400, 300, coinTexture.Width, coinTexture.Height));
+
             exitRect = new Rectangle(700, 380, 100, 100);
             window = new Rectangle(0, 0, 800, 480);
         }
@@ -104,6 +113,22 @@ namespace Monogame_7___Collisions_with_Rectangles
             }
             pacRect.Offset(pacSpeed);
 
+            foreach (Rectangle barrier in barriers)
+                if (pacRect.Intersects(barrier))
+                    pacRect.Offset(-pacSpeed);
+
+            for (int i = 0; i < coins.Count; i++)
+            {
+                if (pacRect.Intersects(coins[i]))
+                {
+                    coins.RemoveAt(i);
+                    i--;
+                }
+            }
+
+            if (exitRect.Contains(pacRect))
+                Exit();
+
             base.Update(gameTime);
         }
 
@@ -114,11 +139,12 @@ namespace Monogame_7___Collisions_with_Rectangles
             // TODO: Add your drawing code here
 
             _spriteBatch.Begin();
-            _spriteBatch.Draw(barrierTexture, barrierRect1, Color.White);
-            _spriteBatch.Draw(barrierTexture, barrierRect2, Color.White);
+            foreach (Rectangle barrier in barriers)
+                _spriteBatch.Draw(barrierTexture, barrier, Color.White);
             _spriteBatch.Draw(exitTexture, exitRect, Color.White);
             _spriteBatch.Draw(currentPacTexture, pacRect, Color.White);
-            _spriteBatch.Draw(coinTexture, coinRect, Color.White);
+            foreach (Rectangle coin in coins)
+                _spriteBatch.Draw(coinTexture, coin, Color.White);
             _spriteBatch.End();
 
             base.Draw(gameTime);
